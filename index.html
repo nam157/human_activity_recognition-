@@ -175,8 +175,30 @@
                     <img src="assets/img/pose_tracking_full_body_landmarks.png" width="80%" height="80%">
                 </div>
                 <div class="yts">
-                    <p style="color: black;font-size: medium;">Trong bài này mình chỉ có nhận dạng 5 hành động cơ bản: Đi, Đứng, Chạy, Ngã, Vỗ tay. Do chỉ có 5 hành động nên bây giờ hãy tạo các thư mục tương ứng với hành động. Mỗi hành động sẽ tương ứng 1175 thư mục con và mỗi thư mục cho chứa độ dài 30 frame. Chúng ta sẽ thu thập các video tương ứng rồi, chúng ta lặp qua các video để thu 32 vị trí như trên hình với mỗi hành động riêng lẻ.</p>
+                    <p style="color: black;font-size: medium;">Trước khi bạn, chuẩn bị dữ liệu cho đầu vào bạn nên 
+                        tham khảo <a href="https://google.github.io/mediapipe/solutions/pose.html" style="color: cadetblue;">MediaPipe Pose</a> để biết cách vẽ các điểm keypoints và cách hoạt động của nó như thế nào rồi mới tiếp tục bài toán này.</p>
+                        <p style="color: black;font-size: medium;">Mỗi vị trí trong 33 keypoints đó đều có 4 điểm tương ứng hoặc có thể nói là tọa độ tương ứng đó là: X,Y,Z,VISIBILITY. Phần này chính là input của mạng LSTM. Chúng ta sẽ đưa 4 điểm tương ứng này với từng điểm keypoints(có 33 điểm) sẽ tao thành array, sau đó chúng ta làm phẳng nó ra 33*4 sẽ là 132 điểm. Thêm 1 vấn đề nữa là nếu như trong 1 khung hình mà không thể hết được 33 điểm thì làm sao ? Chúng ta có thể thêm các vị trí không thể vẽ được thì chúng ta gán bằng 0 vào. </p>
+                    
+                        <span>Code</span>
+                        <div>
+                          <pre style="color: rgb(2, 2, 2); padding: 1px;width: auto; ">
+                            <code class="language-python" style="font-family: Consolas;text-align: left">
+                def extract_keypoints(self,results):
+                    pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(33*4)
+                    return np.concatenate([pose])
+
+
+                            </code></pre></div>
+<br>
+                    
+                    <p style="color: black;font-size: medium;">Bây giờ tạo các folder chứa các hành động. Trong bài này mình chỉ có nhận dạng 5 hành động cơ bản: 
+                        Đi, Đứng, Chạy, Ngã, Vỗ tay. Do chỉ có 5 hành động nên bây giờ hãy tạo các thư mục tương ứng với hành động. 
+                        Mỗi hành động sẽ tương ứng 1175 thư mục con và mỗi thư mục cho chứa độ dài 30 frame. 
+                        Chúng ta sẽ thu thập các video tương ứng rồi, chúng ta lặp qua các video để thu 33 vị trí như trên hình với mỗi hành động riêng lẻ. Và trích xuất các điểm kepoints như phần ở trên. Và lưu lại dưới dạng .npy</p>
                     <br>
+                    
+
+
                     <span>Code</span>
                   <div>
                     <pre style="color: rgb(2, 2, 2); padding: 1px;width: auto; ">
